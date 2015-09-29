@@ -1,0 +1,86 @@
+html {
+  height: 100%; }
+
+body {
+  min-height: 100%; }
+
+#solitaire {
+  max-width: 1400px;
+  margin: 0 auto;
+  background-color: #26a65b; }
+  #solitaire:after {
+    content: "";
+    display: table;
+    clear: both; }
+  #solitaire #stock,
+  #solitaire #waste,
+  #solitaire #hearts,
+  #solitaire #spades,
+  #solitaire #diamonds,
+  #solitaire #clubs,
+  #solitaire #tableau-1,
+  #solitaire #tableau-2,
+  #solitaire #tableau-3,
+  #solitaire #tableau-4,
+  #solitaire #tableau-5,
+  #solitaire #tableau-6,
+  #solitaire #tableau-7 {
+    position: relative;
+    float: left;
+    width: 13%;
+    margin-right: 1.5%; }
+    #solitaire #stock img,
+    #solitaire #waste img,
+    #solitaire #hearts img,
+    #solitaire #spades img,
+    #solitaire #diamonds img,
+    #solitaire #clubs img,
+    #solitaire #tableau-1 img,
+    #solitaire #tableau-2 img,
+    #solitaire #tableau-3 img,
+    #solitaire #tableau-4 img,
+    #solitaire #tableau-5 img,
+    #solitaire #tableau-6 img,
+    #solitaire #tableau-7 img {
+      width: 100%;
+      height: auto; }
+  #solitaire #waste {
+    margin-right: 16%; }
+  #solitaire #clubs,
+  #solitaire #tableau-7 {
+    margin-right: 0; }
+  #solitaire #tableau {
+    clear: both;
+    padding-top: 35px;
+    include: clearfix(); }
+  #solitaire #stock div > div,
+  #solitaire #waste div > div,
+  #solitaire #hearts div > div,
+  #solitaire #spades div > div,
+  #solitaire #diamonds div > div,
+  #solitaire #clubs div > div {
+    position: absolute;
+    top: 0;
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    -khtml-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none; }
+  #solitaire #tableau-1 div > div,
+  #solitaire #tableau-2 div > div,
+  #solitaire #tableau-3 div > div,
+  #solitaire #tableau-4 div > div,
+  #solitaire #tableau-5 div > div,
+  #solitaire #tableau-6 div > div,
+  #solitaire #tableau-7 div > div {
+    position: absolute;
+    top: 0;
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    -khtml-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none; }
+
+/*# sourceMappingURL=solitaire.css.map */

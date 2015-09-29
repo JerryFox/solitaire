@@ -1,0 +1,59 @@
+<!doctype html>
+<!--[if lt IE 7]>      <html class="no-js lt-ie9 lt-ie8 lt-ie7" lang=""> <![endif]-->
+<!--[if IE 7]>         <html class="no-js lt-ie9 lt-ie8" lang=""> <![endif]-->
+<!--[if IE 8]>         <html class="no-js lt-ie9" lang=""> <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang=""> <!--<![endif]-->
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <title>Solitaire</title>
+    <meta name="description" content="">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <!-- Add favicon -->
+    <!--<link rel="apple-touch-icon" href="apple-touch-icon.png">-->
+    <link rel="stylesheet" href="css/solitaire.css" />
+    <script src="js/vendor/modernizr-2.8.3-respond-1.4.2.min.js"></script>
+</head>
+
+<body>
+    <!--[if lt IE 8]>
+        <p class="browserupgrade">
+        You are using an <strong>outdated</strong> browser. 
+        Please <a href="http://browsehappy.com/">upgrade your browser</a> to improve your experience.
+        </p>
+    <![endif]-->
+
+    <div id="solitaire">
+        <div id="controls">
+            <button id="deal">Deal</button>
+            <button id="top-count">Get Top Count</button>
+        </div>
+        <div id="stock"></div>
+        <div id="waste"></div>
+        <div id="foundation">
+            <div id="hearts"></div>
+            <div id="spades"></div>
+            <div id="diamonds"></div>
+            <div id="clubs"></div>
+        </div>
+        <div id="tableau">
+            <div id="tableau-1"></div>
+            <div id="tableau-2"></div>
+            <div id="tableau-3"></div>
+            <div id="tableau-4"></div>
+            <div id="tableau-5"></div>
+            <div id="tableau-6"></div>
+            <div id="tableau-7"></div>
+        </div>
+    </div>
+
+    <!--<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>-->
+    <script>window.jQuery || document.write('<script src="js/vendor/jquery-1.11.2.min.js"><\/script>')</script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.11.4/jquery-ui.js"></script>
+    <!-- TODO Pick better cdn and include local version in event of failure -->
+    <script src="js/solitaire.js"></script>
+
+</body>
+
+</html>

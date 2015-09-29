@@ -1,0 +1,127 @@
+$eucalyptus: #26a65b;
+
+$max-game-width: 1400px;
+$card-width: 13%;
+$card-spacing: 1.5%;
+$tableau-spacing: 35px;
+
+//---------- Mixins ----------
+
+@mixin clearfix() {
+	&:after {
+		content: "";
+		display: table;
+		clear: both;
+	}
+}
+
+@mixin no-select() {
+	-webkit-touch-callout: none;
+    -webkit-user-select: none;
+    -khtml-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+}
+
+
+//---------- Solitaire Styles ----------
+
+
+html, body {
+  height: 100%;
+  background-color: $eucalyptus;
+}
+
+body {
+  min-height: 100%;
+}
+
+#solitaire {
+	max-width: $max-game-width;
+	margin: 0 auto;
+	@include clearfix();
+
+	#stock,
+	#waste,
+	#hearts,
+	#spades,
+	#diamonds,
+	#clubs,
+	#tableau-1,
+	#tableau-2,
+	#tableau-3,
+	#tableau-4,
+	#tableau-5,
+	#tableau-6,
+	#tableau-7 {
+		position: relative;
+		float: left;
+		width: $card-width;
+		margin-right: $card-spacing;
+		img {
+			width: 100%;
+			height: auto;
+		}
+	}
+
+	#stock:hover {
+		background-image: url(../img/placeholder-stock.svg);
+		background-size: 100%;
+		background-repeat: no-repeat;
+	}
+
+	#waste {
+		margin-right: $card-width + (2 * $card-spacing);
+	}
+
+	#clubs,
+	#tableau-7 {
+		margin-right: 0;
+	}
+
+	#tableau {
+		clear: both;
+		padding-top: $tableau-spacing;
+		include: clearfix();
+	}
+
+	#stock div > div,
+	#waste div > div,
+	#hearts div > div,
+	#spades div > div,
+	#diamonds div > div,
+	#clubs div > div {
+		position: absolute;
+		top: 0;
+		@include no-select();
+		img {
+			position: relative;
+		}
+	}
+
+	#tableau-1 div > div,
+	#tableau-2 div > div,
+	#tableau-3 div > div,
+	#tableau-4 div > div,
+	#tableau-5 div > div,
+	#tableau-6 div > div,
+	#tableau-7 div > div {
+		position: absolute;
+		top: 0;
+		@include no-select();
+		img {
+			position: relative;
+		}
+	}
+
+	.card-being-dragged {
+		-webkit-box-shadow: 0px 3px 4px 0px rgba(0,0,0,0.25);
+		-moz-box-shadow: 0px 3px 4px 0px rgba(0,0,0,0.25);
+		box-shadow: 0px 3px 4px 0px rgba(0,0,0,0.25);
+		border-radius: 7px 7px 7px 7px;
+		-moz-border-radius: 7px 7px 7px 7px;
+		-webkit-border-radius: 7px 7px 7px 7px;
+		border: 0px solid #000000;
+	}
+}
