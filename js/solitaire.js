@@ -1,110 +1,130 @@
-(function() {
+var solitaire = (function() {
 
-  // TODO: Comment the shit out of the code that is here...
-  // TODO: And refactor code to make more readable while doing this.
-  //       Move css code from drop to addToTopOf
-  // TODO: Double click to add to foundation (in progress)
-  //       Needs to verify the double click is not applied to cards it should
-  //       not be. Only should be in top card in tab stacks
-  //       Need to implement double click behavior.
-  //       i.e. Get rank, validate against top of its fnd stack, and move or reject.
-  //       I think stipping all event on removeFrom will help with this
-  // TODO: Add win code and reset the deck after a win
-  // TODO  Count moves
-  // TODO: Allow user to choose their card back image
-  // TODO: Add jquery ui touch punch and provide local copies of all dependancies
-  // TODO: Loading... until all card resources have loaded
-  // TODO: Units tests
+  // Game element ids
+  var GAME = 'solitaire';
+  var STOCK = 'stock';
+  var WASTE = 'waste';
+  var FOUND = 'foundation';
+  var HEARTS = 'hearts';
+  var SPADES = 'spades';
+  var DIAMONDS = 'diamonds';
+  var CLUBS = 'clubs';
+  var TAB = 'tableau';
+  var TAB_1 = 'tableau-1';
+  var TAB_2 = 'tableau-2';
+  var TAB_3 = 'tableau-3';
+  var TAB_4 = 'tableau-4';
+  var TAB_5 = 'tableau-5';
+  var TAB_6 = 'tableau-6';
+  var TAB_7 = 'tableau-7';
 
-  // Game element selectors
-  var _STOCK = '#stock';
-  var _WASTE = '#waste';
-  var _HEARTS = '#hearts';
-  var _SPADES = '#spades';
-  var _DIAMONDS = '#diamonds';
-  var _CLUBS = '#clubs';
-  var _TAB1 = '#tableau-1';
-  var _TAB2 = '#tableau-2';
-  var _TAB3 = '#tableau-3';
-  var _TAB4 = '#tableau-4';
-  var _TAB5 = '#tableau-5';
-  var _TAB6 = '#tableau-6';
-  var _TAB7 = '#tableau-7';
-  var _TOP = '.top-of-stack';
-  var _BASE = '.stack-placeholder';
-
-  // Ids and classes
-  var ID_TAB = 'tableau';
-  var ID_FND = 'foundation';
-  var CL_TOP = 'top-of-stack';
-  var CL_BASE = 'stack-placeholder';
-  var CL_CARD_DRAGGED = 'card-being-dragged';
+  // Card classes
+  var TOP = 'top-of-stack';
+  var BASE = 'stack-placeholder';
+  var DRAGGING = 'card-being-dragged';
 
   // Card img data attributes
   var DATA_RANK = 'data-rank';
   var DATA_SUIT = 'data-suit';
 
   // Image paths
-  var PLACEHOLDER_DEFAULT = 'img/placeholder-outline.svg';
-  var PLACEHOLDER_EMPTY = 'img/placeholder-empty.svg';
-  var PLACEHOLDER_STOCK = 'img/placeholder-stock.svg';
-  var PLACEHOLDER_HEARTS = 'img/placeholder-hearts.svg';
-  var PLACEHOLDER_SPADES = 'img/placeholder-spades.svg';
-  var PLACEHOLDER_DIAMONDS = 'img/placeholder-diamonds.svg';
-  var PLACEHOLDER_CLUBS = 'img/placeholder-clubs.svg';
+  var PH_DEFAULT = 'img/placeholder-outline.svg';
+  var PH_EMPTY = 'img/placeholder-empty.svg';
+  var PH_STOCK = 'img/placeholder-stock.svg';
+  var PH_HEARTS = 'img/placeholder-hearts.svg';
+  var PH_SPADES = 'img/placeholder-spades.svg';
+  var PH_DIAMONDS = 'img/placeholder-diamonds.svg';
+  var PH_CLUBS = 'img/placeholder-clubs.svg';
   var CARD_BACK = 'img/back.svg';
 
+  // Flag monitoring the state of the game.
   var gameInProgress = false;
+
+  // Z-index value applied the last card to recieve interaction.
+  // Ensures the card in focus always remains on top of other cards in game.
   var cardImgZIndex = 1;
 
   //---------- Initialization --------------------------------------------------
 
   var init = function() {
-    init.stacks();
+    init.stack();
     init.deck();
   };
 
-  init.stacks = function() {
-    init.stacks.appendElements();
-    init.stacks.bindEvents();
+  init.stack = function() {
+    init.stack.containers();
+    init.stack.placeholders();
   };
 
-  init.stacks.appendElements = function() {
-    DomBuilder.stackBase($(_STOCK), PLACEHOLDER_STOCK, CL_BASE);
-    DomBuilder.stackBase($(_WASTE), PLACEHOLDER_EMPTY);
-    DomBuilder.stackBase($(_HEARTS), PLACEHOLDER_HEARTS);
-    DomBuilder.stackBase($(_SPADES), PLACEHOLDER_SPADES);
-    DomBuilder.stackBase($(_DIAMONDS), PLACEHOLDER_DIAMONDS);
-    DomBuilder.stackBase($(_CLUBS), PLACEHOLDER_CLUBS);
-    var tabs = [$(_TAB1),$(_TAB2),$(_TAB3),$(_TAB4),$(_TAB5),$(_TAB6),$(_TAB7)];
-    for (var i = 0; i < tabs.length; i++) {
-      DomBuilder.stackBase(tabs[i], PLACEHOLDER_DEFAULT);
-    }
+  // Appends stack container divs to the game container div
+  init.stack.containers = function() {
+    var game = $('#' + GAME);
+    var stock = $('<div id="' + STOCK + '"></div>');
+    var waste = $('<div id="' + WASTE + '"></div>');
+    var foundation = $('<div id="' + FOUND + '"></div>');
+    var tableau = $('<div id="' + TAB + '"></div>');
+    var fStacks = [HEARTS, SPADES, DIAMONDS, CLUBS];
+    for (var i = 0; i < fStacks.length; i++)
+      foundation.append('<div id="' + fStacks[i] + '"></div>');
+    var tStacks = [TAB_1, TAB_2, TAB_3, TAB_4, TAB_5, TAB_6, TAB_7];
+    for (i = 0; i < tStacks.length; i++)
+      tableau.append('<div id="' + tStacks[i] + '"></div>');
+    var gameElements = [stock, waste, foundation, tableau];
+    for (i = 0; i < gameElements.length; i++)
+      game.append(gameElements[i]);
   };
 
-  init.stacks.bindEvents = function() {
-    init.stacks.bindEvents.stockPlaceHolderClick();
-    init.stacks.bindEvents.foundationPlaceholderDroppable();
-    init.stacks.bindEvents.tableauPlaceholderDroppable();
+  // Each card stack has a placeholder at it's base that displays
+  // an image when no cards are in the stack.
+  init.stack.placeholders = function() {
+    $('#' + STOCK).append(init.stack.placeholders.dom(PH_STOCK));
+    $('#' + WASTE).append(init.stack.placeholders.dom(PH_EMPTY));
+    $('#' + HEARTS).append(init.stack.placeholders.dom(PH_HEARTS));
+    $('#' + DIAMONDS).append(init.stack.placeholders.dom(PH_DIAMONDS));
+    $('#' + SPADES).append(init.stack.placeholders.dom(PH_SPADES));
+    $('#' + CLUBS).append(init.stack.placeholders.dom(PH_CLUBS));
+    var tStacks = [TAB_1, TAB_2, TAB_3, TAB_4, TAB_5, TAB_6, TAB_7];
+    for (var i = 0; i < tStacks.length; i++)
+      $('#' + tStacks[i]).append(init.stack.placeholders.dom(PH_DEFAULT));
+    init.stack.placeholders.bind();
   };
 
-  init.stacks.bindEvents.stockPlaceHolderClick = function() {
-    $(_STOCK).getPlaceholder().click(Click.emptyStock);
+  // Builds and returns placeholder elements without appending.
+  init.stack.placeholders.dom = function(imgPath) {
+    var div = $('<div></div>');
+    div.append('<img src="' + imgPath +'" />');
+    div.addClass(BASE);
+    div.addClass(TOP);
+    return div;
   };
 
-  init.stacks.bindEvents.foundationPlaceholderDroppable = function() {
-    var foundation = [$(_HEARTS), $(_SPADES), $(_DIAMONDS), $(_CLUBS)];
-    for (var i = 0; i < foundation.length; i++) {
-      foundation[i].getPlaceholder().droppable(Droppable.foundationPlaceholder);
-    }
+  // Binds click and drop events to card stack placeholder divs.
+  init.stack.placeholders.bind = function() {
+    init.stack.placeholders.bind.stockClick();
+    init.stack.placeholders.bind.foundationDroppable();
+    init.stack.placeholders.bind.tableauDroppable();
   };
 
-  init.stacks.bindEvents.tableauPlaceholderDroppable = function() {
-    var tabs = [$(_TAB1),$(_TAB2),$(_TAB3),$(_TAB4),$(_TAB5),$(_TAB6),$(_TAB7)];
-    for (var i = 0; i < tabs.length; i++) {
-      tabs[i].getPlaceholder().droppable(Droppable.tableauPlaceholder);
-    }
+  // Stock placeholder is clickable to refresh the pile with waste pile cards.
+  init.stack.placeholders.bind.stockClick = function() {
+    $('#' + STOCK).getPlaceholder().click(Click.emptyStock);
   };
+
+  // Foundation stack placeholders are droppable to recieve 'Aces'.
+  init.stack.placeholders.bind.foundationDroppable = function() {
+    var f = [HEARTS, SPADES, DIAMONDS, CLUBS];
+    for (var i = 0; i < f.length; i++)
+      $('#' + f[i]).getPlaceholder().droppable(Droppable.foundationPlaceholder);
+  };
+
+  // Tableau stack placeholders are droppable to recieve 'Kings'.
+  init.stack.placeholders.bind.tableauDroppable = function() {
+    var t = [TAB_1, TAB_2, TAB_3, TAB_4, TAB_5, TAB_6, TAB_7];
+    for (i = 0; i < t.length; i++)
+      $('#' + t[i]).getPlaceholder().droppable(Droppable.tableauPlaceholder);
+  };
+
+  // TODO REFACTORING BELOW >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 
   init.deck = function() {
     var cards = init.deck.shuffle(DomBuilder.cards());
@@ -126,23 +146,23 @@
   };
 
   init.deck.card = function(card) {
-    card.flipDown()
+    card.flipDown();
     card.css({
       'background-image': 'url(' + CARD_BACK + ')',
       'background-size': '100%',
       'background-repeat': 'no-repeat'
     });
 
-    card.addToTopOf($(_STOCK));
+    card.addToTopOf($('#' + STOCK));
   };
 
   init.deck.clear = function() {
-    var stacks = [$(_STOCK),$(_WASTE),
-                  $(_HEARTS),$(_SPADES),$(_DIAMONDS),$(_CLUBS),
-                  $(_TAB1),$(_TAB2),$(_TAB3),$(_TAB4),$(_TAB5),$(_TAB6),$(_TAB7)];
+    var stacks = [$('#' + STOCK),$('#' + WASTE),
+                  $('#' + HEARTS),$('#' + SPADES),$('#' + DIAMONDS),$('#' + CLUBS),
+                  $('#' + TAB_1),$('#' + TAB_2),$('#' + TAB_3),$('#' + TAB_4),$('#' + TAB_5),$('#' + TAB_6),$('#' + TAB_7)];
     for (var i = 0; i < stacks.length; i++) {
       stacks[i].getAllCards().remove();
-      stacks[i].children('div:first').addClass(CL_TOP);
+      stacks[i].children('div:first').addClass(TOP);
     }
     cardImgZIndex = 1;
   };
@@ -161,32 +181,32 @@
 
   deal.cards = function() {
     for (var i = 1; i <= 28; i++) {
-      var card = $(_STOCK).getTopCard();
+      var card = $('#' + STOCK).getTopCard();
       if ( i==1 || i==8 || i==14 || i==19 || i==23 || i==26 || i==28 )
         card.flipUp();
       if ( i==1 )
-        card.changeStack($(_STOCK), $(_TAB1));
+        card.changeStack($('#' + STOCK), $('#' + TAB_1));
       else if ( i==2 || i==8 )
-        card.changeStack($(_STOCK), $(_TAB2));
+        card.changeStack($('#' + STOCK), $('#' + TAB_2));
       else if ( i==3 || i==9  || i==14 )
-        card.changeStack($(_STOCK), $(_TAB3));
+        card.changeStack($('#' + STOCK), $('#' + TAB_3));
       else if ( i==4 || i==10 || i==15 || i==19 )
-        card.changeStack($(_STOCK), $(_TAB4));
+        card.changeStack($('#' + STOCK), $('#' + TAB_4));
       else if ( i==5 || i==11 || i==16 || i==20 || i==23 )
-        card.changeStack($(_STOCK), $(_TAB5));
+        card.changeStack($('#' + STOCK), $('#' + TAB_5));
       else if ( i==6 || i==12 || i==17 || i==21 || i==24 || i==26 )
-        card.changeStack($(_STOCK), $(_TAB6));
+        card.changeStack($('#' + STOCK), $('#' + TAB_6));
       else if ( i==7 || i==13 || i==18 || i==22 || i==25 || i==27 || i==28 )
-        card.changeStack($(_STOCK), $(_TAB7));
+        card.changeStack($('#' + STOCK), $('#' + TAB_7));
     }
-  }
+  };
 
   //-----------
 
   var win = win || {};
 
   win.check = function() {
-    var foundation = [$(_HEARTS), $(_SPADES), $(_DIAMONDS), $(_CLUBS)];
+    var foundation = [$('#' + HEARTS), $('#' + SPADES), $('#' + DIAMONDS), $('#' + CLUBS)];
     for (var i = 0; i < foundation.length; i++) {
       if (foundation[i].getAllCards().length != 13) {
         console.log('YOU DID NOT WIN');
@@ -204,9 +224,9 @@
   Click.emptyStock = function(event) {
     //
     //
-    var cardsInWaste = $(_WASTE).sizeOfStack();
+    var cardsInWaste = $('#' + WASTE).sizeOfStack();
     while (cardsInWaste > 0) {
-      $(_WASTE).getTopCard().flipDown().changeStack($(_WASTE), $(_STOCK));
+      $('#' + WASTE).getTopCard().flipDown().changeStack($('#' + WASTE), $('#' + STOCK));
       cardsInWaste--;
     }
   };
@@ -215,9 +235,9 @@
     event.stopPropagation();
     event.preventDefault();
     if (gameInProgress) {
-      var card = $(this)
+      var card = $(this);
       card.flipUp();
-      card.changeStack($(_STOCK), $(_WASTE));
+      card.changeStack($('#' + STOCK), $('#' + WASTE));
     }
   };
 
@@ -263,11 +283,11 @@
     start:  function(event, ui) {
       $(this).preserveDimenisions();
       $(this).incrementNestedStackZIndex();
-      $(this).getImg().addClass(CL_CARD_DRAGGED);
+      $(this).getImg().addClass(DRAGGING);
     },
     stop:   function(event, ui) {
       $(this).restoreFlexibility();
-      $(this).getImg().removeClass(CL_CARD_DRAGGED);
+      $(this).getImg().removeClass(DRAGGING);
     }
   };
 
@@ -390,28 +410,28 @@
   };
 
   jQuery.fn.addToTopOf = function(stack) {
-    var parent = stack.find(_TOP);
+    var parent = stack.find('.' + TOP);
 
     if (!gameInProgress)
-      $(this).addClass(CL_TOP);
+      $(this).addClass(TOP);
 
     parent.append($(this));
-    parent.removeClass(CL_TOP);
+    parent.removeClass(TOP);
 
     $(this).incrementNestedStackZIndex();
 
     if (stack.applyOffset() && stack.sizeOfStack() > 1)
       $(this).css({ 'position': 'absolute', 'top': '20%' });
 
-    if (stack.is($(_STOCK))) {
+    if (stack.is($('#' + STOCK))) {
       $(this).click(Click.cardInStock);
 
-    } else if (stack.is($(_WASTE))) {
+    } else if (stack.is($('#' + WASTE))) {
 
       $(this).draggable(Draggable.card);
       $(this).dblclick(Click.doubleClickTopCardInTableau);
 
-    } else if ($(this).getStack().parent().attr('id') == ID_FND) {
+    } else if ($(this).getStack().parent().attr('id') == FOUND) {
 
       $(this).draggable(Draggable.card);
       $(this).droppable(Droppable.foundation);
@@ -424,15 +444,15 @@
         win.check();
       }
 
-    } else if ($(this).getStack().parent().attr('id') == ID_TAB) {
+    } else if ($(this).getStack().parent().attr('id') == TAB) {
 
-      if ($(this).isFaceUp() && !($(this).hasClass(CL_BASE))) {
+      if ($(this).isFaceUp() && !($(this).hasClass(BASE))) {
         $(this).draggable(Draggable.card); // all cards in stack must be draggable
         $(this).droppable(Droppable.tableau);
         $(this).dblclick(Click.doubleClickTopCardInTableau);
       }
 
-      if (parent.data('ui-droppable') && !parent.hasClass(CL_BASE)) {
+      if (parent.data('ui-droppable') && !parent.hasClass(BASE)) {
         parent.droppable('destroy');
         parent.unbind('dblclick');
       }
@@ -449,10 +469,10 @@
     $(this).unbind('click');
 
     var parent = $(this).parent();
-    parent.addClass(CL_TOP);
+    parent.addClass(TOP);
 
-    if (stack.parent().attr('id') == ID_TAB) {
-      if (parent.isFaceUp() && !parent.hasClass(CL_BASE)) {
+    if (stack.parent().attr('id') == TAB) {
+      if (parent.isFaceUp() && !parent.hasClass(BASE)) {
         parent.droppable(Droppable.tableau);
         parent.dblclick(Click.doubleClickTopCardInTableau);
       }
@@ -472,19 +492,19 @@
   };
 
   jQuery.fn.getStack = function() {
-    if ($(this).parents(_STOCK).length > 0) return $(_STOCK);
-    if ($(this).parents(_WASTE).length > 0) return $(_WASTE);
-    if ($(this).parents(_HEARTS).length > 0) return $(_HEARTS);
-    if ($(this).parents(_SPADES).length > 0) return $(_SPADES);
-    if ($(this).parents(_DIAMONDS).length > 0) return $(_DIAMONDS);
-    if ($(this).parents(_CLUBS).length > 0) return $(_CLUBS);
-    if ($(this).parents(_TAB1).length > 0) return $(_TAB1);
-    if ($(this).parents(_TAB2).length > 0) return $(_TAB2);
-    if ($(this).parents(_TAB3).length > 0) return $(_TAB3);
-    if ($(this).parents(_TAB4).length > 0) return $(_TAB4);
-    if ($(this).parents(_TAB5).length > 0) return $(_TAB5);
-    if ($(this).parents(_TAB6).length > 0) return $(_TAB6);
-    if ($(this).parents(_TAB7).length > 0) return $(_TAB7);
+    if ($(this).parents('#' + STOCK).length > 0) return $('#' + STOCK);
+    if ($(this).parents('#' + WASTE).length > 0) return $('#' + WASTE);
+    if ($(this).parents('#' + HEARTS).length > 0) return $('#' + HEARTS);
+    if ($(this).parents('#' + SPADES).length > 0) return $('#' + SPADES);
+    if ($(this).parents('#' + DIAMONDS).length > 0) return $('#' + DIAMONDS);
+    if ($(this).parents('#' + CLUBS).length > 0) return $('#' + CLUBS);
+    if ($(this).parents('#' + TAB_1).length > 0) return $('#' + TAB_1);
+    if ($(this).parents('#' + TAB_2).length > 0) return $('#' + TAB_2);
+    if ($(this).parents('#' + TAB_3).length > 0) return $('#' + TAB_3);
+    if ($(this).parents('#' + TAB_4).length > 0) return $('#' + TAB_4);
+    if ($(this).parents('#' + TAB_5).length > 0) return $('#' + TAB_5);
+    if ($(this).parents('#' + TAB_6).length > 0) return $('#' + TAB_6);
+    if ($(this).parents('#' + TAB_7).length > 0) return $('#' + TAB_7);
     else console.log('getStack: no parent stack found');
   };
 
@@ -541,18 +561,27 @@
       cardImgZIndex++;
       that = that.children('div');
     }
-  }
+  };
 
   jQuery.fn.getTopCard = function() {
-    return $(this).find(_TOP);
+    return $(this).find('.' + TOP);
   };
 
   jQuery.fn.getAllCards = function() {
-    return $(this).find('div').not(_BASE);
+    return $(this).find('div').not('.' + BASE);
   };
 
   jQuery.fn.getPlaceholder = function() {
-    return $(this).children(_BASE);
+    var placeholder = $(this).children('div:first');
+    try {
+      if (!placeholder.hasClass(BASE)) {
+        throw new Error('Calling element is not a stack container div');
+      }
+    } catch(e) {
+      console.log(e);
+      placeholder = null;
+    }
+    return placeholder;
   };
 
   jQuery.fn.sizeOfStack = function() {
@@ -560,7 +589,7 @@
   };
 
   jQuery.fn.applyOffset = function() {
-    var tabs = [$(_TAB1),$(_TAB2),$(_TAB3),$(_TAB4),$(_TAB5),$(_TAB6),$(_TAB7)];
+    var tabs = [$('#' + TAB_1),$('#' + TAB_2),$('#' + TAB_3),$('#' + TAB_4),$('#' + TAB_5),$('#' + TAB_6),$('#' + TAB_7)];
     for (var i = 0; i < tabs.length; i++) {
       if (Stack.equal($(this), tabs[i])) return true;
     }
@@ -568,12 +597,12 @@
   };
 
   Stack.getFoundationStackWithSuit = function(suit) {
-    if (suit == Suit.HEART) return $(_HEARTS);
-    if (suit == Suit.SPADE) return $(_SPADES);
-    if (suit == Suit.DIAMOND) return $(_DIAMONDS);
-    if (suit == Suit.CLUB) return $(_CLUBS);
+    if (suit == Suit.HEART) return $('#' + HEARTS);
+    if (suit == Suit.SPADE) return $('#' + SPADES);
+    if (suit == Suit.DIAMOND) return $('#' + DIAMONDS);
+    if (suit == Suit.CLUB) return $('#' + CLUBS);
     else return console.log('getFoundationStackWithSuit: Invalid suit integer');
-  }
+  };
 
   Stack.equal = function(stack1, stack2) {
     return stack1.attr('id') === stack2.attr('id');
@@ -585,11 +614,11 @@
 
   DomBuilder.stackBase = function(parent, baseCardImgPath) {
     var stack = DomBuilder.div(parent);
-    stack.addClass(CL_BASE);
-    stack.addClass(CL_TOP);
+    stack.addClass(BASE);
+    stack.addClass(TOP);
     var img = DomBuilder.img(stack, baseCardImgPath);
     parent.append(stack);
-    parent.removeClass(CL_TOP);
+    parent.removeClass(TOP);
   }
 
   DomBuilder.cards = function() {
@@ -671,10 +700,10 @@
       deal();
     });
 
-    $('#top-count').click(function() {
-      console.log($(_TOP));
-      alert("TOP COUNT: " + $(_TOP).length);
-    });
+    //$('#top-count').click(function() {
+    //  console.log($(_TOP));
+    //  alert("TOP COUNT: " + $(_TOP).length);
+    //});
 
   });
 
