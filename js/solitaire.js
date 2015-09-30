@@ -51,6 +51,8 @@ var solitaire = (function() {
     init.deck();
   };
 
+  // A stack is a region on the solitaire game board where cards are piled.
+  // Stacks are nested structures, with each card added nested in the previous.
   init.stack = function() {
     init.stack.containers();
     init.stack.placeholders();
@@ -124,15 +126,31 @@ var solitaire = (function() {
       $('#' + t[i]).getPlaceholder().droppable(Droppable.tableauPlaceholder);
   };
 
-  // TODO REFACTORING BELOW >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-
   init.deck = function() {
-    var cards = init.deck.shuffle(DomBuilder.cards());
+    var cards = init.deck.shuffle(init.deck.dom());
     for (var i = 0; i < cards.length; i++) {
       init.deck.card(cards[i]);
     }
   };
 
+  // Returns card elements in an ordered array.
+  init.deck.dom = function() {
+    var cards = [];
+    for (var card = 1; card <= 52;) {
+      for (var suit = 1; suit <= 4; suit++, card++) {
+        cards[card - 1] = $('<div></div>');
+        var rank = Math.ceil(card / 4);
+        var filename = rank + '-' + Suit.toString(suit);
+        var img = $('<img src="img/' + filename + '.svg" />');
+        img.attr(DATA_RANK, rank);
+        img.attr(DATA_SUIT, suit);
+        cards[card - 1].append(img);
+      }
+    }
+    return cards;
+  };
+
+  // Shuffles an array, or this case our deck of card elements.
   init.deck.shuffle = function(cards) {
     var currentIndex = cards.length, temporaryValue, randomIndex;
     while (0 !== currentIndex) {
@@ -145,27 +163,32 @@ var solitaire = (function() {
     return cards;
   };
 
+  // Sets card state 'face down' an appends the card to the stock stack.
   init.deck.card = function(card) {
-    card.flipDown();
+    card.setFaceUp(false);
     card.css({
       'background-image': 'url(' + CARD_BACK + ')',
       'background-size': '100%',
       'background-repeat': 'no-repeat'
     });
-
     card.addToTopOf($('#' + STOCK));
   };
 
+  // Removes all card elements from all stacks.
   init.deck.clear = function() {
-    var stacks = [$('#' + STOCK),$('#' + WASTE),
-                  $('#' + HEARTS),$('#' + SPADES),$('#' + DIAMONDS),$('#' + CLUBS),
-                  $('#' + TAB_1),$('#' + TAB_2),$('#' + TAB_3),$('#' + TAB_4),$('#' + TAB_5),$('#' + TAB_6),$('#' + TAB_7)];
-    for (var i = 0; i < stacks.length; i++) {
-      stacks[i].getAllCards().remove();
-      stacks[i].children('div:first').addClass(TOP);
+    var s = [STOCK, WASTE, HEARTS, SPADES, DIAMONDS, CLUBS,
+             TAB_1, TAB_2, TAB_3, TAB_4, TAB_5, TAB_6, TAB_7];
+    for (var i = 0; i < s.length; i++) {
+      $('#' + s[i]).getAllCards().remove();
+      $('#' + s[i]).children('div:first').addClass(TOP);
     }
     cardImgZIndex = 1;
   };
+
+  //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+
+  // addToTopOf
+  // getAllCards()
 
   //---------- Dealing ---------------------------------------------------------
 
@@ -183,7 +206,7 @@ var solitaire = (function() {
     for (var i = 1; i <= 28; i++) {
       var card = $('#' + STOCK).getTopCard();
       if ( i==1 || i==8 || i==14 || i==19 || i==23 || i==26 || i==28 )
-        card.flipUp();
+        card.setFaceUp(true);
       if ( i==1 )
         card.changeStack($('#' + STOCK), $('#' + TAB_1));
       else if ( i==2 || i==8 )
@@ -226,7 +249,7 @@ var solitaire = (function() {
     //
     var cardsInWaste = $('#' + WASTE).sizeOfStack();
     while (cardsInWaste > 0) {
-      $('#' + WASTE).getTopCard().flipDown().changeStack($('#' + WASTE), $('#' + STOCK));
+      $('#' + WASTE).getTopCard().setFaceUp(false).changeStack($('#' + WASTE), $('#' + STOCK));
       cardsInWaste--;
     }
   };
@@ -236,7 +259,7 @@ var solitaire = (function() {
     event.preventDefault();
     if (gameInProgress) {
       var card = $(this);
-      card.flipUp();
+      card.setFaceUp(true);
       card.changeStack($('#' + STOCK), $('#' + WASTE));
     }
   };
@@ -244,7 +267,7 @@ var solitaire = (function() {
   Click.faceDownCardInTableau = function(event) {
     //
     //
-    $(this).flipUp();
+    $(this).card().setFaceUp(true);
     $(this).draggable(Draggable.card);
     $(this).droppable(Droppable.tableau);
     $(this).dblclick(Click.doubleClickTopCardInTableau);
@@ -401,12 +424,13 @@ var solitaire = (function() {
 
   //---------- Card and stack manipulation -------------------------------------
 
-  var Card = Card || {};
-
-  jQuery.fn.changeStack = function(from, to) {
-    var card = $(this).removeFrom(from);
-    card.addToTopOf(to);
-    return card;
+  jQuery.fn.setFaceUp = function(isFaceUp) {
+    // TODO Verify caller is card
+    if (isFaceUp)
+      $(this).getImg().css('visibility', 'visible');
+    else
+      $(this).getImg().css('visibility', 'hidden');
+    return this;
   };
 
   jQuery.fn.addToTopOf = function(stack) {
@@ -461,6 +485,12 @@ var solitaire = (function() {
       console.log('addToTopOfStack: No matching stack found');
     }
     return $(this);
+  };
+
+  jQuery.fn.changeStack = function(from, to) {
+    var card = $(this).removeFrom(from);
+    card.addToTopOf(to);
+    return card;
   };
 
   jQuery.fn.removeFrom = function(stack) {
@@ -518,16 +548,6 @@ var solitaire = (function() {
 
   jQuery.fn.getSuit = function() {
     return $(this).getImg().attr(DATA_SUIT);
-  };
-
-  jQuery.fn.flipUp = function() {
-    $(this).getImg().css('visibility', 'visible');
-    return $(this);
-  };
-
-  jQuery.fn.flipDown = function() {
-    $(this).getImg().css('visibility', 'hidden');
-    return $(this);
   };
 
   jQuery.fn.hasRank = function(rank) {
@@ -606,51 +626,6 @@ var solitaire = (function() {
 
   Stack.equal = function(stack1, stack2) {
     return stack1.attr('id') === stack2.attr('id');
-  };
-
-  //---------- DomBuilder ------------------------------------------------------
-
-  var DomBuilder = DomBuilder || {};
-
-  DomBuilder.stackBase = function(parent, baseCardImgPath) {
-    var stack = DomBuilder.div(parent);
-    stack.addClass(BASE);
-    stack.addClass(TOP);
-    var img = DomBuilder.img(stack, baseCardImgPath);
-    parent.append(stack);
-    parent.removeClass(TOP);
-  }
-
-  DomBuilder.cards = function() {
-    var cards = [];
-    for (var card = 1; card <= 52;) {
-      for (var suit = 1; suit <= 4; suit++, card++) {
-        cards[card - 1] = DomBuilder.card(Math.ceil(card / 4), suit);
-      }
-    }
-    return cards;
-  };
-
-  DomBuilder.card = function(rank, suit) {
-    var card = $('<div></div>');
-    var filename = rank + '-' + Suit.toString(suit);
-    var img = $('<img src="img/' + filename + '.svg" />');
-    img.attr(DATA_RANK, rank);
-    img.attr(DATA_SUIT, suit);
-    card.append(img);
-    return card;
-  };
-
-  DomBuilder.div = function(parent) {
-    var div = $('<div></div>');
-    parent.append(div);
-    return div;
-  };
-
-  DomBuilder.img = function(parent, imgPath) {
-    var img = $('<img src="' + imgPath + '" />');
-    parent.append(img);
-    return img;
   };
 
   //---------- Suit ------------------------------------------------------------
