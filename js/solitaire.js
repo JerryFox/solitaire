@@ -19,6 +19,7 @@ var solitaire = (function() {
   var TAB_7 = 'tableau-7';
 
   // Card classes
+  var STACK = 'solitaire-stack-container';
   var TOP = 'top-of-stack';
   var BASE = 'stack-placeholder';
   var DRAGGING = 'card-being-dragged';
@@ -61,16 +62,16 @@ var solitaire = (function() {
   // Appends stack container divs to the game container div
   init.stack.containers = function() {
     var game = $('#' + GAME);
-    var stock = $('<div id="' + STOCK + '"></div>');
-    var waste = $('<div id="' + WASTE + '"></div>');
+    var stock = $('<div id="' + STOCK + '" class="' + STACK + '"></div>');
+    var waste = $('<div id="' + WASTE + '" class="' + STACK + '"></div>');
     var foundation = $('<div id="' + FOUND + '"></div>');
     var tableau = $('<div id="' + TAB + '"></div>');
     var fStacks = [HEARTS, SPADES, DIAMONDS, CLUBS];
     for (var i = 0; i < fStacks.length; i++)
-      foundation.append('<div id="' + fStacks[i] + '"></div>');
+      foundation.append('<div id="' + fStacks[i] + '" class="' + STACK + '"></div>');
     var tStacks = [TAB_1, TAB_2, TAB_3, TAB_4, TAB_5, TAB_6, TAB_7];
     for (i = 0; i < tStacks.length; i++)
-      tableau.append('<div id="' + tStacks[i] + '"></div>');
+      tableau.append('<div id="' + tStacks[i] + '" class="' + STACK + '"></div>');
     var gameElements = [stock, waste, foundation, tableau];
     for (i = 0; i < gameElements.length; i++)
       game.append(gameElements[i]);
@@ -188,7 +189,21 @@ var solitaire = (function() {
   //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 
   // addToTopOf
+  // setFaceUp
   // getAllCards()
+
+
+
+
+
+
+
+
+
+
+
+
+
 
   //---------- Dealing ---------------------------------------------------------
 
@@ -267,7 +282,7 @@ var solitaire = (function() {
   Click.faceDownCardInTableau = function(event) {
     //
     //
-    $(this).card().setFaceUp(true);
+    $(this).setFaceUp(true);
     $(this).draggable(Draggable.card);
     $(this).droppable(Droppable.tableau);
     $(this).dblclick(Click.doubleClickTopCardInTableau);
@@ -424,17 +439,21 @@ var solitaire = (function() {
 
   //---------- Card and stack manipulation -------------------------------------
 
-  jQuery.fn.setFaceUp = function(isFaceUp) {
-    // TODO Verify caller is card
-    if (isFaceUp)
-      $(this).getImg().css('visibility', 'visible');
-    else
-      $(this).getImg().css('visibility', 'hidden');
+  // Throws an error if the calling object is not a card.
+  jQuery.fn.card = function() {
+    try {
+      if (!($(this).children('img').attr(DATA_RANK)))
+        throw new Error('Calling element is not a card');
+    } catch(e) {
+      console.log(e);
+    }
     return this;
-  };
+  }
 
+  // Adds card to the top a of stack.
   jQuery.fn.addToTopOf = function(stack) {
-    var parent = stack.find('.' + TOP);
+    var newTopCard = $(this).card(); // integrate with code below
+    var parent = stack.getTopCard(); // oldTopCard rename
 
     if (!gameInProgress)
       $(this).addClass(TOP);
@@ -485,6 +504,16 @@ var solitaire = (function() {
       console.log('addToTopOfStack: No matching stack found');
     }
     return $(this);
+  };
+
+  //
+  jQuery.fn.setFaceUp = function(isFaceUp) {
+    var card = $(this).card();
+    if (isFaceUp)
+      $(this).getImg().css('visibility', 'visible');
+    else
+      $(this).getImg().css('visibility', 'hidden');
+    return this;
   };
 
   jQuery.fn.changeStack = function(from, to) {
@@ -572,7 +601,25 @@ var solitaire = (function() {
     });
   };
 
+  //----------------------------------------------------------------------------
   var Stack = Stack || {};
+
+  // Throws an error if the calling object is not a stack container div.
+  jQuery.fn.stack = function() {
+    try {
+      if (!($(this).hasClass(STACK))) {
+        throw new Error('Calling element is not a stack container div');
+      }
+    } catch(e) {
+      console.log(e);
+    }
+    return this;
+  }
+
+  // Returns the top card on the stack.
+  jQuery.fn.getTopCard = function() {
+    return $(this).stack().find('.' + TOP);
+  };
 
   jQuery.fn.incrementNestedStackZIndex = function(callback) {
     var that = $(this);
@@ -581,10 +628,6 @@ var solitaire = (function() {
       cardImgZIndex++;
       that = that.children('div');
     }
-  };
-
-  jQuery.fn.getTopCard = function() {
-    return $(this).find('.' + TOP);
   };
 
   jQuery.fn.getAllCards = function() {
