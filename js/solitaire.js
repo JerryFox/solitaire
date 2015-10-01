@@ -159,8 +159,20 @@ var solitaire = (function() {
     $('#' + GAME).hide();
   };
 
-  // Restores game board visibility and removes loading div.
+  // Preloads card back image and calls init.loading.complete to display game.
   // See init.deck.dom.
+  // Also, preloads other images not required until later.
+  init.loading.cardFrontsComplete = function() {
+    $('<img src="' + CARD_BACK +'"/>').load(function() {
+      $('#' + LOAD).remove();
+      $('#' + GAME).fadeIn();
+    });
+    //*******************************************************************
+    // TODO Preload win images so they display without delay
+    //*******************************************************************
+  };
+
+  // Restores game board visibility and removes loading div.
   init.loading.complete = function() {
     $('#' + LOAD).remove();
     $('#' + GAME).fadeIn();
@@ -186,7 +198,7 @@ var solitaire = (function() {
         img.load(function() {
           loadedImages++;
           if (loadedImages == 52) {
-            init.loading.complete();
+            init.loading.cardFrontsComplete();
           }
         });
         img.attr(DATA_RANK, rank);
