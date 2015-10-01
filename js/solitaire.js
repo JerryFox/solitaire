@@ -45,6 +45,9 @@ var solitaire = (function() {
   // Flag monitoring the state of the game.
   var gameInProgress = false;
 
+  // Flag to block game controls used during 'You Win' animation.
+  var blockControls = false;
+
   // Z-index value applied the last card to recieve interaction.
   // Ensures the card in focus always remains on top of other cards in game.
   var cardImgZIndex = 1;
@@ -204,16 +207,22 @@ var solitaire = (function() {
     cardImgZIndex = 1;
   };
 
+  var reinit = function() {
+    gameInProgress = false;
+    init.deck.clear();
+    init.deck();
+    blockControls = false;
+  };
+
   // Game play -----------------------------------------------------------------
 
   var deal = function() {
-    if (gameInProgress) {
-      gameInProgress = false;
-      init.deck.clear();
-      init.deck();
+    if (!blockControls) {
+      if (gameInProgress)
+        reinit();
+      deal.cards();
+      gameInProgress = true;
     }
-    deal.cards();
-    gameInProgress = true;
   };
 
   deal.cards = function() {
@@ -240,21 +249,61 @@ var solitaire = (function() {
 
   // Animates cards back into stock, displays win message, and re-initializes.
   var win = function() {
-    // TODO: Implement ++++++++++++++++++++++++++++++
-    console.log('TODO: win()');
-    // TODO: Implement ++++++++++++++++++++++++++++++
+    win.displayMessage();
+    win.animateCards();
   };
 
-  // Returns true if the user has won the game.
+  // Calls win if the user has won the game, otherwise returns false.
   // This method is called whenever the user places a 'King' in foundation.
   win.check = function() {
     var winStatus = true;
     var foundation = [HEARTS, SPADES, DIAMONDS, CLUBS];
     for (var i = 0; i < foundation.length; i++) {
-      if ($('#' + foundation[i]).getAllCards().length != 13)
-        winStatus = false;
+      if (! ($('#' + foundation[i]).getTopCard().hasRank(13)))
+        return false;
     }
-    return winStatus;
+    win();
+  };
+
+  // Displays 'YOU WIN' on the 7 empty tableau stacks for short-period
+  // then re-initializes the game.
+  win.displayMessage = function() {
+    blockControls = true;
+
+    $('#' + TAB_1).changePlaceholderImg('img/joker-red.svg');
+    $('#' + TAB_2).changePlaceholderImg('img/joker-red.svg');
+    $('#' + TAB_3).changePlaceholderImg('img/joker-red.svg');
+    $('#' + TAB_5).changePlaceholderImg('img/joker-red.svg');
+    $('#' + TAB_6).changePlaceholderImg('img/joker-red.svg');
+    $('#' + TAB_7).changePlaceholderImg('img/joker-red.svg');
+    window.setTimeout(function() {
+      var tStacks = [TAB_1, TAB_2, TAB_3, TAB_5, TAB_6, TAB_7];
+      for (var i = 0; i < tStacks.length; i++) {
+        $('#' + tStacks[i]).changePlaceholderImg(PH_DEFAULT);
+      }
+      reinit();
+      blockControls = false;
+    }, 2500);
+  };
+
+  // Animates all cards back into the stock.
+  win.animateCards = function() {
+    var stockPosition = $('#' + STOCK).position();
+    var fStacks = [HEARTS, SPADES, DIAMONDS, CLUBS];
+    for (var i = 0; i < fStacks.length; i++) {
+      fStack = $('#' + fStacks[i]);
+      fStackPosition = fStack.position();
+      var diffTop = stockPosition.top - fStackPosition.top;
+      var diffLeft = stockPosition.left - fStackPosition.left;
+      var cardsOnly = fStack.getPlaceholder().children('div:first');
+      if (cardsOnly) {
+        cardsOnly.preserveDimenisions();
+        cardsOnly.animate({
+          'top' : diffTop,
+          'left' : diffLeft
+        }, 1000);
+      }
+    }
   };
 
   var Click = {
@@ -438,7 +487,8 @@ var solitaire = (function() {
       newTopCard.bindWasteCardListeners();
     } else if (newTopCard.getStack().parent().attr('id') == FOUND) {
       newTopCard.bindFoundationCardListeners();
-      if (newTopCard.hasRank(13)) win.check();
+      if (newTopCard.hasRank(13))
+        win.check();
     } else if (newTopCard.getStack().isInTableau) {
       newTopCard.bindTableauTopCardListeners();
       oldTopCard.unbindTableauTopCardListeners();
@@ -550,7 +600,7 @@ var solitaire = (function() {
 
   // Returns true if this card has rank.
   jQuery.fn.hasRank = function(rank) {
-    return $(this).getImg().attr(DATA_RANK) == rank;
+    return $(this).getRank() == rank;
   };
 
   // Returns true if this card is face up.
@@ -618,6 +668,16 @@ var solitaire = (function() {
     return $(this).stack().children('.' + BASE + ':first');
   };
 
+  // Changes the placeholder image with fade out/in effect.
+  // Requires image preloading.
+  jQuery.fn.changePlaceholderImg = function(imgPath) {
+    var image = $(this).getPlaceholder().getImg();
+    image.fadeOut('fast', function () {
+        image.attr('src', imgPath);
+        image.fadeIn('fast');
+    });
+  };
+
   // Returns the number of cards in stack (not including placeholder).
   jQuery.fn.sizeOfStack = function() {
     return $(this).getAllCards().length;
@@ -662,6 +722,13 @@ var solitaire = (function() {
     $('#' + DEAL).click(function() {
       deal();
     });
+
+
+    $('#test-win').click(function() {
+      win.check();
+    });
+
+
   });
 
 })(); // solitaire

@@ -1,6 +1,9 @@
-// TODO: Add win code and reset the deck after a win
-// TODO  Count moves
+// TODO: Loading... until all card resources have loaded
+// TODO: Add you win images
+// TODO:  Count moves
 // TODO: Allow user to choose their card back image
 // TODO: Add jquery ui touch punch and provide local copies of all dependancies
-// TODO: Loading... until all card resources have loaded
 // TODO: Units tests
+
+// BUG: Moved 'Ace' from stack 1 of tableau and could not drop king there after
+//      Sometimes placeholder loses droppable?
