@@ -5,6 +5,7 @@ var solitaire = (function() {
 
   // Game element ids
   var GAME = 'solitaire';
+  var LOAD = 'solitaire-game-loading';
   var DEAL = 'deal-btn';
   var STOCK = 'stock';
   var WASTE = 'waste';
@@ -48,6 +49,9 @@ var solitaire = (function() {
   // Flag to block game controls used during 'You Win' animation.
   var blockControls = false;
 
+  // Flag used to indicate when all card images.
+  var loadedImages = 0;
+
   // Z-index value applied the last card to recieve interaction.
   // Ensures the card in focus always remains on top of other cards in game.
   var cardImgZIndex = 1;
@@ -57,6 +61,7 @@ var solitaire = (function() {
   var init = function() {
     init.controls();
     init.stack();
+    init.loading();
     init.deck();
   };
 
@@ -146,6 +151,21 @@ var solitaire = (function() {
       $('#' + t[i]).getPlaceholder().droppable(Droppable.tableauPlaceholder);
   };
 
+  // Sets up game board to a loading state where no stacks are visible
+  // and a loading div is present instead.
+  init.loading = function() {
+    var loading = $('<div id="' + LOAD + '">LOADING</div>');
+    loading.insertAfter($('#' + GAME));
+    $('#' + GAME).hide();
+  };
+
+  // Restores game board visibility and removes loading div.
+  // See init.deck.dom.
+  init.loading.complete = function() {
+    $('#' + LOAD).remove();
+    $('#' + GAME).fadeIn();
+  };
+
   // Sets up deck such that 52 shuffled cards are face down in the stock pile.
   init.deck = function() {
     var cards = init.deck.shuffle(init.deck.dom());
@@ -163,6 +183,12 @@ var solitaire = (function() {
         var rank = Math.ceil(card / 4);
         var filename = rank + '-' + Suit.toString(suit);
         var img = $('<img src="img/' + filename + '.svg" />');
+        img.load(function() {
+          loadedImages++;
+          if (loadedImages == 52) {
+            init.loading.complete();
+          }
+        });
         img.attr(DATA_RANK, rank);
         img.attr(DATA_SUIT, suit);
         cards[card - 1].append(img);
@@ -719,10 +745,10 @@ var solitaire = (function() {
 
   $(document).ready(function(){
     init();
+
     $('#' + DEAL).click(function() {
       deal();
     });
-
 
     $('#test-win').click(function() {
       win.check();

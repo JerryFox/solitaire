@@ -1,4 +1,4 @@
-// TODO: Loading... until all card resources have loaded
+// TODO: Style loading div
 // TODO: Add you win images
 // TODO:  Count moves
 // TODO: Allow user to choose their card back image
