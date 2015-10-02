@@ -1,6 +1,3 @@
-/**
- *
- */
 var solitaire = (function() {
 
   // Game element ids
