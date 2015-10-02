@@ -417,6 +417,7 @@ var solitaire = (function() {
           return true;
       },
       drop: function(event, ui) {
+        console.log("foundationPlaceholder.drop");
         ui.draggable.moveTo(ui.draggable.getFoundationStack());
       }
     },
@@ -434,6 +435,7 @@ var solitaire = (function() {
         }
       },
       drop: function(event, ui) {
+        console.log("foundationCard.drop");
         ui.draggable.moveTo(ui.draggable.getFoundationStack());
       }
     },
@@ -445,6 +447,7 @@ var solitaire = (function() {
         return $(this).getStack().sizeOfStack() === 0 && draggable.hasRank(13);
       },
       drop: function(event, ui) {
+        console.log("tableauPlaceholder.drop");
         ui.draggable.moveTo($(this).getStack());
       }
     },
@@ -459,6 +462,7 @@ var solitaire = (function() {
           return true;
       },
       drop: function(event, ui) {
+        console.log("tableauCard.drop");
         ui.draggable.moveTo($(this).getStack());
       }
     }
