@@ -25,6 +25,7 @@ var solitaire = (function() {
 
   // Card and stack classes
   var STACK = 'solitaire-stack-container';
+  var WIN = 'solitaire-win-message';
   var TOP = 'top-of-stack';
   var BASE = 'stack-placeholder';
   var DRAGGING = 'card-being-dragged';
@@ -67,9 +68,10 @@ var solitaire = (function() {
 
   init.controls = function() {
     var game = $('#' + GAME);
-    var controls = $('<div id="controls"></div>');
+    var controls = $('<div id="controls-title"></div>');
     var dealBtn = $('<button id="' + DEAL + '">Deal</button>');
     controls.append(dealBtn);
+    controls.append('<div id="solitaire-title">Solitaire Rocks</div>');
     game.append(controls);
   };
 
@@ -154,7 +156,8 @@ var solitaire = (function() {
   // Sets up game board to a loading state where no stacks are visible
   // and a loading div is present instead.
   init.loading = function() {
-    var loading = $('<div id="' + LOAD + '">LOADING</div>');
+    var html = '<p>Loading please wait</p><img src="img/loading.gif" alt="" />';
+    var loading = $('<div id="' + LOAD + '">' + html + '</div>');
     loading.insertAfter($('#' + GAME));
     $('#' + GAME).hide();
   };
@@ -164,12 +167,8 @@ var solitaire = (function() {
   // Also, preloads other images not required until later.
   init.loading.cardFrontsComplete = function() {
     $('<img src="' + CARD_BACK +'"/>').load(function() {
-      $('#' + LOAD).remove();
-      $('#' + GAME).fadeIn();
+      init.loading.complete();
     });
-    //*******************************************************************
-    // TODO Preload win images so they display without delay
-    //*******************************************************************
   };
 
   // Restores game board visibility and removes loading div.
@@ -307,21 +306,21 @@ var solitaire = (function() {
   // then re-initializes the game.
   win.displayMessage = function() {
     blockControls = true;
-
-    $('#' + TAB_1).changePlaceholderImg('img/joker-red.svg');
-    $('#' + TAB_2).changePlaceholderImg('img/joker-red.svg');
-    $('#' + TAB_3).changePlaceholderImg('img/joker-red.svg');
-    $('#' + TAB_5).changePlaceholderImg('img/joker-red.svg');
-    $('#' + TAB_6).changePlaceholderImg('img/joker-red.svg');
-    $('#' + TAB_7).changePlaceholderImg('img/joker-red.svg');
+    var fontSize = $('#' + TAB_1).width();
+    var tab = [TAB_1, TAB_2, TAB_3, TAB_5, TAB_6, TAB_7];
+    var win = ['Y', 'O', 'U', 'W', 'I', 'N'];
+    for (var i = 0; i < win.length; i++) {
+      var div = $('<div class="' + WIN + '"><span>' + win[i] + '</span></div>');
+      div.css('font-size', fontSize - 25 + 'px');
+      $('#' + tab[i]).getPlaceholder().append(div);
+    }
+    $('.solitaire-win-message').hide().fadeIn();
     window.setTimeout(function() {
-      var tStacks = [TAB_1, TAB_2, TAB_3, TAB_5, TAB_6, TAB_7];
-      for (var i = 0; i < tStacks.length; i++) {
-        $('#' + tStacks[i]).changePlaceholderImg(PH_DEFAULT);
-      }
-      reinit();
-      blockControls = false;
-    }, 2500);
+      $('.solitaire-win-message').fadeOut(function() {
+        reinit();
+        blockControls = false;
+      });
+    }, 3000);
   };
 
   // Animates all cards back into the stock.
@@ -580,7 +579,7 @@ var solitaire = (function() {
   jQuery.fn.positionOn = function(stack) {
     var card = $(this).card();
     if (stack.isInTableau() && !card.isOnBottom())
-      card.css({ 'position': 'absolute', 'top': '20%', 'left': '0' });
+      card.css({ 'position': 'absolute', 'top': '15%', 'left': '0' });
     else
       card.css({ 'position': 'absolute', 'top': '0', 'left': '0' });
   };
@@ -706,16 +705,6 @@ var solitaire = (function() {
     return $(this).stack().children('.' + BASE + ':first');
   };
 
-  // Changes the placeholder image with fade out/in effect.
-  // Requires image preloading.
-  jQuery.fn.changePlaceholderImg = function(imgPath) {
-    var image = $(this).getPlaceholder().getImg();
-    image.fadeOut('fast', function () {
-        image.attr('src', imgPath);
-        image.fadeIn('fast');
-    });
-  };
-
   // Returns the number of cards in stack (not including placeholder).
   jQuery.fn.sizeOfStack = function() {
     return $(this).getAllCards().length;
@@ -753,20 +742,11 @@ var solitaire = (function() {
 
   }; // Suit
 
-  //----------------------------------------------------------------------------
+  // Initialize the game and setup game controls -_-----------------------------
 
   $(document).ready(function(){
     init();
-
-    $('#' + DEAL).click(function() {
-      deal();
-    });
-
-    $('#test-win').click(function() {
-      win.check();
-    });
-
-
+    $('#' + DEAL).click(function() { deal(); });
   });
 
 })(); // solitaire

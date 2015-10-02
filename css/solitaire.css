@@ -1,9 +1,22 @@
+@import url(https://fonts.googleapis.com/css?family=Lato|Neucha);
 html, body {
   height: 100%;
-  background-color: #26a65b; }
+  background-color: #27ae60; }
 
 body {
   min-height: 100%; }
+
+#solitaire-game-loading {
+  width: 100%;
+  text-align: center;
+  margin-top: 50px;
+  color: white;
+  font-family: Lato, sans-serif;
+  font-size: 1.5em; }
+  #solitaire-game-loading p {
+    margin-bottom: 10px; }
+  #solitaire-game-loading img {
+    include: border-radius(3px); }
 
 #solitaire {
   max-width: 1400px;
@@ -12,6 +25,34 @@ body {
     content: "";
     display: table;
     clear: both; }
+  #solitaire #controls-title {
+    position: relative;
+    margin: 60px 0 25px 0;
+    color: white;
+    font-family: Lato, sans-serif; }
+    #solitaire #controls-title button {
+      color: #333232;
+      background-color: #ecf0f1;
+      font-size: 1.2em;
+      padding: .5em 1em;
+      border-radius: 4px;
+      -webkit-border-radius: 4px;
+      -moz-border-radius: 4px;
+      -ms-border-radius: 4px;
+      -o-border-radius: 4px;
+      border: 0px solid #000000;
+      border-bottom: 1px solid #647f69;
+      outline: none; }
+      #solitaire #controls-title button:hover {
+        background-color: #f9f9f9; }
+      #solitaire #controls-title button:active {
+        background-color: #f2eded;
+        border-bottom: 0px;
+        margin-top: 1px; }
+    #solitaire #controls-title #solitaire-title {
+      position: absolute;
+      bottom: 0;
+      right: 0; }
   #solitaire #stock,
   #solitaire #waste,
   #solitaire #hearts,
@@ -105,9 +146,19 @@ body {
     -webkit-box-shadow: 0px 3px 4px 0px rgba(0, 0, 0, 0.25);
     -moz-box-shadow: 0px 3px 4px 0px rgba(0, 0, 0, 0.25);
     box-shadow: 0px 3px 4px 0px rgba(0, 0, 0, 0.25);
-    border-radius: 7px 7px 7px 7px;
-    -moz-border-radius: 7px 7px 7px 7px;
-    -webkit-border-radius: 7px 7px 7px 7px;
+    include: border-radius(7px);
     border: 0px solid #000000; }
+  #solitaire .solitaire-win-message {
+    position: relative;
+    width: 100%;
+    height: 100%; }
+    #solitaire .solitaire-win-message span {
+      display: block;
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -43%);
+      color: white;
+      font-family: 'Neucha', sans-serif; }
 
 /*# sourceMappingURL=solitaire.css.map */

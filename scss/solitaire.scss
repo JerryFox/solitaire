@@ -1,11 +1,9 @@
-$eucalyptus: #26a65b;
+@import url(https://fonts.googleapis.com/css?family=Lato|Neucha);
 
 $max-game-width: 1400px;
 $card-width: 13%;
 $card-spacing: 1.5%;
 $tableau-spacing: 35px;
-
-//---------- Mixins ----------
 
 @mixin clearfix() {
 	&:after {
@@ -24,23 +22,75 @@ $tableau-spacing: 35px;
     user-select: none;
 }
 
-
-//---------- Solitaire Styles ----------
-
+@mixin border-radius($radius) {
+  border-radius: $radius;
+  -webkit-border-radius: $radius;
+  -moz-border-radius: $radius;
+  -ms-border-radius: $radius;
+  -o-border-radius: $radius;
+}
 
 html, body {
   height: 100%;
-  background-color: $eucalyptus;
+  background-color: #27ae60;
 }
 
 body {
   min-height: 100%;
 }
 
+#solitaire-game-loading {
+	width: 100%;
+	text-align: center;
+	margin-top: 50px;
+	color: white;
+	font-family: Lato, sans-serif;
+	font-size: 1.5em;
+	p {
+		margin-bottom: 10px;
+	}
+	img {
+		include: border-radius(3px);
+	}
+}
+
 #solitaire {
 	max-width: $max-game-width;
 	margin: 0 auto;
 	@include clearfix();
+
+	#controls-title {
+		position: relative;
+		margin: 60px 0 25px 0;
+		color: white;
+		font-family: Lato, sans-serif;
+
+		button {
+			color: #333232;
+			background-color: #ecf0f1;
+			font-size: 1.2em;
+			padding: .5em 1em;
+			@include border-radius(4px);
+			border: 0px solid #000000;
+			border-bottom: 1px solid #647f69;
+			outline: none;
+
+			&:hover {
+				background-color: #f9f9f9;
+			}
+			&:active {
+				background-color: #f2eded;
+				border-bottom: 0px;
+				margin-top: 1px;
+			}
+		}
+
+		#solitaire-title {
+			position: absolute;
+	    bottom: 0;
+	    right: 0;
+		}
+	}
 
 	#stock,
 	#waste,
@@ -119,9 +169,22 @@ body {
 		-webkit-box-shadow: 0px 3px 4px 0px rgba(0,0,0,0.25);
 		-moz-box-shadow: 0px 3px 4px 0px rgba(0,0,0,0.25);
 		box-shadow: 0px 3px 4px 0px rgba(0,0,0,0.25);
-		border-radius: 7px 7px 7px 7px;
-		-moz-border-radius: 7px 7px 7px 7px;
-		-webkit-border-radius: 7px 7px 7px 7px;
+		include: border-radius(7px);
 		border: 0px solid #000000;
+	}
+
+	.solitaire-win-message {
+		position: relative;
+		width: 100%;
+		height: 100%;
+		span {
+			display: block;
+			position: absolute;
+		  top: 50%;
+			left: 50%;
+		  transform: translate(-50%, -43%);
+			color: white;
+			font-family: 'Neucha', sans-serif;
+		}
 	}
 }
