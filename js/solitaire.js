@@ -409,6 +409,7 @@ var solitaire = (function() {
 
     // Accepts aces with matching suit.
     foundationPlaceholder : {
+      greedy: true,
       accept: function(event) {
         var suitsMatch = $(this).getSuit() == event.getSuit();
         var isAce = event.getRank() == 1;
@@ -422,6 +423,7 @@ var solitaire = (function() {
 
     // Accepts single card with matching suit and rank 1 greater.
     foundationCard : {
+      greedy: true,
       accept: function(event) {
         var draggingMultipleCards = event.children('div').length;
         if (!draggingMultipleCards) {
@@ -438,8 +440,9 @@ var solitaire = (function() {
 
     // Accepts any 'King'
     tableauPlaceholder : {
+      greedy: true,
       accept: function(draggable) {
-        return draggable.hasRank(13);
+        return $(this).getStack().sizeOfStack() === 0 && draggable.hasRank(13);
       },
       drop: function(event, ui) {
         ui.draggable.moveTo($(this).getStack());
@@ -448,6 +451,7 @@ var solitaire = (function() {
 
     // Accepts card with opposite color and rank 1 less.
     tableauCard : {
+      greedy: true,
       accept: function(event) {
         var colorsAreOpposite = !Suit.match($(this).getSuit(), event.getSuit());
         var rankIsValid = $(this).getRank() == (event.getRank() + 1);
@@ -492,7 +496,7 @@ var solitaire = (function() {
     newTopCard.addClass(TOP);
 
     if (stack.isInTableau()) {
-      if (newTopCard.isFaceUp() && !newTopCard.isPlaceholder()) {
+      if (!newTopCard.isPlaceholder() && newTopCard.isFaceUp()) {
         newTopCard.droppable(Droppable.tableauCard);
         newTopCard.dblclick(Click.Double.faceUpTopCard);
       } else {
