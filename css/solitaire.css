@@ -19,7 +19,7 @@ body {
     include: border-radius(3px); }
 
 #solitaire {
-  max-width: 1400px;
+  max-width: 900px;
   margin: 0 auto; }
   #solitaire:after {
     content: "";
