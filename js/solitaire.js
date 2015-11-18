@@ -41,14 +41,14 @@ var solitaire = (function() {
   var PH_CLUBS = 'img/placeholder-clubs.svg';
   var CARD_BACK = 'img/back.svg';
 
-  // Flag monitoring the state of the game.
-  var gameInProgress = false;
+  // For easy iterating over foundation and tableau stacks
+  var fStacks = [HEARTS, SPADES, DIAMONDS, CLUBS];
+  var tStacks = [TAB_1, TAB_2, TAB_3, TAB_4, TAB_5, TAB_6, TAB_7];
 
-  // Flag to block game controls used during 'You Win' animation.
-  var blockControls = false;
-
-  // Flag used to indicate when all card images.
-  var loadedImages = 0;
+  // Flags
+  var gameInProgress = false; // monitoring the state of the game
+  var blockControls = false; // block game controls during 'You Win' animation
+  var loadedImages = 0; // used to indicate when all card images.
 
   // Z-index value applied the last card to recieve interaction.
   // Ensures the card in focus always remains on top of other cards in game.
@@ -86,13 +86,11 @@ var solitaire = (function() {
     var waste = $('<div id="' + WASTE + '" class="' + STACK + '"></div>');
     var foundation = $('<div id="' + FOUND + '"></div>');
     var tableau = $('<div id="' + TAB + '"></div>');
-    var fStacks = [HEARTS, SPADES, DIAMONDS, CLUBS];
+    var gameElements = [stock, waste, foundation, tableau];
     for (var i = 0; i < fStacks.length; i++)
       foundation.append('<div id="' + fStacks[i] + '" class="' + STACK + '"></div>');
-    var tStacks = [TAB_1, TAB_2, TAB_3, TAB_4, TAB_5, TAB_6, TAB_7];
     for (i = 0; i < tStacks.length; i++)
       tableau.append('<div id="' + tStacks[i] + '" class="' + STACK + '"></div>');
-    var gameElements = [stock, waste, foundation, tableau];
     for (i = 0; i < gameElements.length; i++)
       game.append(gameElements[i]);
   };
@@ -106,7 +104,6 @@ var solitaire = (function() {
     $('#' + SPADES).append(init.stack.placeholders.dom(PH_SPADES, 2));
     $('#' + DIAMONDS).append(init.stack.placeholders.dom(PH_DIAMONDS, 3));
     $('#' + CLUBS).append(init.stack.placeholders.dom(PH_CLUBS, 4));
-    var tStacks = [TAB_1, TAB_2, TAB_3, TAB_4, TAB_5, TAB_6, TAB_7];
     for (var i = 0; i < tStacks.length; i++)
       $('#' + tStacks[i]).append(init.stack.placeholders.dom(PH_DEFAULT));
     init.stack.placeholders.bind();
@@ -126,28 +123,11 @@ var solitaire = (function() {
 
   // Binds click and drop events to card stack placeholder divs.
   init.stack.placeholders.bind = function() {
-    init.stack.placeholders.bind.stockClick();
-    init.stack.placeholders.bind.foundationDroppable();
-    init.stack.placeholders.bind.tableauDroppable();
-  };
-
-  // Stock placeholder is clickable to refresh the pile with waste pile cards.
-  init.stack.placeholders.bind.stockClick = function() {
     $('#' + STOCK).getPlaceholder().click(Click.emptyStock);
-  };
-
-  // Foundation stack placeholders are droppable to recieve 'Aces'.
-  init.stack.placeholders.bind.foundationDroppable = function() {
-    var f = [HEARTS, SPADES, DIAMONDS, CLUBS];
-    for (var i = 0; i < f.length; i++)
-      $('#' + f[i]).getPlaceholder().droppable(Droppable.foundationPlaceholder);
-  };
-
-  // Tableau stack placeholders are droppable to recieve 'Kings'.
-  init.stack.placeholders.bind.tableauDroppable = function() {
-    var t = [TAB_1, TAB_2, TAB_3, TAB_4, TAB_5, TAB_6, TAB_7];
-    for (i = 0; i < t.length; i++)
-      $('#' + t[i]).getPlaceholder().droppable(Droppable.tableauPlaceholder);
+    for (var i = 0; i < fStacks.length; i++)
+      $('#' + fStacks[i]).getPlaceholder().droppable(Droppable.foundationPlaceholder);
+    for (i = 0; i < tStacks.length; i++)
+      $('#' + tStacks[i]).getPlaceholder().droppable(Droppable.tableauPlaceholder);
   };
 
   // Sets up game board to a loading state where no stacks are visible
@@ -160,8 +140,7 @@ var solitaire = (function() {
   };
 
   // Preloads card back image and calls init.loading.complete to display game.
-  // See init.deck.dom.
-  // Also, preloads other images not required until later.
+  // See init.deck.dom. Also, preloads other images not required until later.
   init.loading.cardFrontsComplete = function() {
     $('<img src="' + CARD_BACK +'"/>').load(function() {
       init.loading.complete();
@@ -177,9 +156,8 @@ var solitaire = (function() {
   // Sets up deck such that 52 shuffled cards are face down in the stock pile.
   init.deck = function() {
     var cards = init.deck.shuffle(init.deck.dom());
-    for (var i = 0; i < cards.length; i++) {
+    for (var i = 0; i < cards.length; i++)
       init.deck.card(cards[i]);
-    }
   };
 
   // Returns card elements ordered by rank and suit in an array.
@@ -193,9 +171,7 @@ var solitaire = (function() {
         var img = $('<img src="img/' + filename + '.svg" />');
         img.load(function() {
           loadedImages++;
-          if (loadedImages == 52) {
-            init.loading.cardFrontsComplete();
-          }
+          if (loadedImages == 52) init.loading.cardFrontsComplete();
         });
         img.attr(DATA_RANK, rank);
         img.attr(DATA_SUIT, suit);
@@ -232,11 +208,10 @@ var solitaire = (function() {
 
   // Removes all card elements from all stacks.
   init.deck.clear = function() {
-    var s = [STOCK, WASTE, HEARTS, SPADES, DIAMONDS, CLUBS,
-             TAB_1, TAB_2, TAB_3, TAB_4, TAB_5, TAB_6, TAB_7];
-    for (var i = 0; i < s.length; i++) {
-      $('#' + s[i]).getAllCards().remove();
-      $('#' + s[i]).children('div:first').addClass(TOP);
+    var stacks = fStacks.concat(tStacks);
+    for (var i = 0; i < stacks.length; i++) {
+      $('#' + stacks[i]).getAllCards().remove();
+      $('#' + stacks[i]).children('div:first').addClass(TOP);
     }
     cardImgZIndex = 1;
   };
@@ -245,6 +220,9 @@ var solitaire = (function() {
     gameInProgress = false;
     init.deck.clear();
     init.deck();
+    // restore placeholder drop zone to size of single card
+    for (var i = 0; i < tStacks.length; i++)
+      $('#' + tStacks[i]).getPlaceholder().css('height', 'auto');
     blockControls = false;
   };
 
@@ -291,9 +269,8 @@ var solitaire = (function() {
   // This method is called whenever the user places a 'King' in foundation.
   win.check = function() {
     var winStatus = true;
-    var foundation = [HEARTS, SPADES, DIAMONDS, CLUBS];
-    for (var i = 0; i < foundation.length; i++) {
-      if (! ($('#' + foundation[i]).getTopCard().hasRank(13)))
+    for (var i = 0; i < fStacks.length; i++) {
+      if (! ($('#' + fStacks[i]).getTopCard().hasRank(13)))
         return false;
     }
     win();
@@ -304,12 +281,11 @@ var solitaire = (function() {
   win.displayMessage = function() {
     blockControls = true;
     var fontSize = $('#' + TAB_1).width();
-    var tab = [TAB_1, TAB_2, TAB_3, TAB_5, TAB_6, TAB_7];
     var win = ['Y', 'O', 'U', 'W', 'I', 'N'];
     for (var i = 0; i < win.length; i++) {
       var div = $('<div class="' + WIN + '"><span>' + win[i] + '</span></div>');
       div.css('font-size', fontSize - 25 + 'px');
-      $('#' + tab[i]).getPlaceholder().append(div);
+      $('#' + tStacks[i]).getPlaceholder().append(div);
     }
     $('.solitaire-win-message').hide().fadeIn();
     window.setTimeout(function() {
@@ -323,7 +299,6 @@ var solitaire = (function() {
   // Animates all cards back into the stock.
   win.animateCards = function() {
     var stockPosition = $('#' + STOCK).position();
-    var fStacks = [HEARTS, SPADES, DIAMONDS, CLUBS];
     for (var i = 0; i < fStacks.length; i++) {
       fStack = $('#' + fStacks[i]);
       fStackPosition = fStack.position();
@@ -362,7 +337,7 @@ var solitaire = (function() {
     // Flips card up and binds tableau event handlers.
     faceDownTopCardInTableau : function(event) {
       $(this).setFaceUp(true);
-      $(this).draggable(Draggable.card).droppable(Droppable.tableauCard);
+      $(this).draggable(Draggable.card);
       $(this).dblclick(Click.Double.faceUpTopCard).unbind('click');
     },
 
@@ -387,6 +362,7 @@ var solitaire = (function() {
   }; // Click
 
   var Draggable = {
+
     // All face up card are draggable
     card : {
       containment: "html",
@@ -407,65 +383,44 @@ var solitaire = (function() {
 
   var Droppable = {
 
-    // Accepts aces with matching suit.
     foundationPlaceholder : {
       greedy: true,
-      accept: function(event) {
-        var suitsMatch = $(this).getSuit() == event.getSuit();
-        var isAce = event.getRank() == 1;
-        if (suitsMatch && isAce)
+      accept: function(drag) {
+        if (drag.getRank() === 1) {
           return true;
+        } else {
+          // accept single card with matching suit and rank 1 greater.
+          var draggingMultipleCards = drag.children('div').length;
+          if (!draggingMultipleCards) {
+            var topCard = drag.getFoundationStack().getTopCard();
+            var rankIsValid = topCard.getRank() == (drag.getRank() - 1);
+            if (rankIsValid)
+              return true;
+          }
+        }
       },
       drop: function(event, ui) {
-        console.log("foundationPlaceholder.drop");
         ui.draggable.moveTo(ui.draggable.getFoundationStack());
       }
     },
 
-    // Accepts single card with matching suit and rank 1 greater.
-    foundationCard : {
+    tableauPlaceholder : {
       greedy: true,
-      accept: function(event) {
-        var draggingMultipleCards = event.children('div').length;
-        if (!draggingMultipleCards) {
-          var suitsMatch = $(this).getSuit() == event.getSuit();
-          var rankIsValid = $(this).getRank() == (event.getRank() - 1);
-          if (suitsMatch && rankIsValid)
+      accept: function(drag) {
+        if ($(this).getStack().sizeOfStack() === 0 && drag.hasRank(13)) {
+          return true;
+        } else {
+          var topCard = $(this).getStack().getTopCard();
+          var colorsAreOpposite = !Suit.colorsMatch(topCard.getSuit(), drag.getSuit());
+          var rankIsValid = topCard.getRank() === (drag.getRank() + 1);
+          if (colorsAreOpposite && rankIsValid)
             return true;
         }
       },
       drop: function(event, ui) {
-        console.log("foundationCard.drop");
-        ui.draggable.moveTo(ui.draggable.getFoundationStack());
-      }
-    },
-
-    // Accepts any 'King'
-    tableauPlaceholder : {
-      greedy: true,
-      accept: function(draggable) {
-        return $(this).getStack().sizeOfStack() === 0 && draggable.hasRank(13);
-      },
-      drop: function(event, ui) {
-        console.log("tableauPlaceholder.drop");
         ui.draggable.moveTo($(this).getStack());
       }
     },
-
-    // Accepts card with opposite color and rank 1 less.
-    tableauCard : {
-      greedy: true,
-      accept: function(event) {
-        var colorsAreOpposite = !Suit.match($(this).getSuit(), event.getSuit());
-        var rankIsValid = $(this).getRank() == (event.getRank() + 1);
-        if (colorsAreOpposite && rankIsValid)
-          return true;
-      },
-      drop: function(event, ui) {
-        console.log("tableauCard.drop");
-        ui.draggable.moveTo($(this).getStack());
-      }
-    }
 
   }; // Droppable
 
@@ -501,17 +456,19 @@ var solitaire = (function() {
 
     if (stack.isInTableau()) {
       if (!newTopCard.isPlaceholder() && newTopCard.isFaceUp()) {
-        newTopCard.droppable(Droppable.tableauCard);
         newTopCard.dblclick(Click.Double.faceUpTopCard);
       } else {
         newTopCard.click(Click.faceDownTopCardInTableau);
       }
+      // Adjust drop zone size
+      var stack = newTopCard.getStack();
+      var ph = stack.getPlaceholder();
+      var height = ph.height() - 25;
+      ph.css('height', height + 'px');
     }
 
     var returnCard = card.detach();
     returnCard.unbind('click');
-    if (returnCard.data('ui-droppable'))
-      returnCard.droppable('destroy');
     return returnCard;
   };
 
@@ -534,6 +491,11 @@ var solitaire = (function() {
     } else if (newTopCard.getStack().isInTableau) {
       newTopCard.bindTableauTopCardListeners();
       oldTopCard.unbindTableauTopCardListeners();
+      // Adjust drop zone size
+      var stack = newTopCard.getStack();
+      var ph = stack.getPlaceholder();
+      var height = ph.height() + 25;
+      ph.css('height', height + 'px');
     } else {
       console.log('addToTopOfStack: No matching stack found');
     }
@@ -558,7 +520,6 @@ var solitaire = (function() {
     var card = $(this).card();
     if (card.getStack().isInFoundation()) {
       card.draggable(Draggable.card);
-      card.droppable(Droppable.foundationCard);
     }
   };
 
@@ -566,7 +527,6 @@ var solitaire = (function() {
     var card = $(this).card();
     if (card.isFaceUp() && !(card.hasClass(BASE))) {
       card.draggable(Draggable.card); // all cards in stack must be draggable
-      card.droppable(Droppable.tableauCard);
       card.dblclick(Click.Double.faceUpTopCard);
     }
   };
@@ -575,7 +535,6 @@ var solitaire = (function() {
     var card = $(this).card();
     if (card.data('ui-droppable') && !card.hasClass(BASE)) {
       // once draggable all cards remain draggable
-      card.droppable('destroy');
       card.unbind('dblclick');
     }
   };
@@ -739,8 +698,8 @@ var solitaire = (function() {
           Suit.Color.BLACK;
     },
 
-    match : function(suit1, suit2) {
-      return Suit.getColor(parseInt(suit1)) == Suit.getColor(parseInt(suit2));
+    colorsMatch : function(suit1, suit2) {
+      return Suit.getColor(parseInt(suit1)) === Suit.getColor(parseInt(suit2));
     },
 
     Color : { RED: 1, BLACK: 2 }
