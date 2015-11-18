@@ -220,9 +220,31 @@ var solitaire = (function() {
     gameInProgress = false;
     init.deck.clear();
     init.deck();
+
+
+
+
+
+
+
+
+
+
+
+
     // restore placeholder drop zone to size of single card
     for (var i = 0; i < tStacks.length; i++)
       $('#' + tStacks[i]).getPlaceholder().css('height', 'auto');
+
+
+
+
+
+
+
+
+
+
     blockControls = false;
   };
 
@@ -460,14 +482,14 @@ var solitaire = (function() {
       } else {
         newTopCard.click(Click.faceDownTopCardInTableau);
       }
-      // Adjust drop zone size
-      var stack = newTopCard.getStack();
-      var ph = stack.getPlaceholder();
-      var height = ph.height() - 25;
-      ph.css('height', height + 'px');
     }
 
     var returnCard = card.detach();
+
+    // adjust placeholder height after removing the card
+    if (stack.isInTableau())
+      stack.adjustPlaceholderHeight();
+
     returnCard.unbind('click');
     return returnCard;
   };
@@ -491,16 +513,18 @@ var solitaire = (function() {
     } else if (newTopCard.getStack().isInTableau) {
       newTopCard.bindTableauTopCardListeners();
       oldTopCard.unbindTableauTopCardListeners();
-      // Adjust drop zone size
-      var stack = newTopCard.getStack();
-      var ph = stack.getPlaceholder();
-      var height = ph.height() + 25;
-      ph.css('height', height + 'px');
+      stack.adjustPlaceholderHeight();
     } else {
       console.log('addToTopOfStack: No matching stack found');
     }
     return newTopCard;
   };
+
+  jQuery.fn.adjustPlaceholderHeight = function() {
+    var cardHeight = $('#' + STOCK).height();
+    var newHeight = cardHeight + $(this).sizeOfStack() * 26;
+    $(this).getPlaceholder().css('height', newHeight + 'px');
+  }
 
   jQuery.fn.bindStockCardListeners = function() {
     var card = $(this).card();
