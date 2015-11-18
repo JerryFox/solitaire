@@ -212,9 +212,9 @@ var solitaire = (function() {
 
   // Removes all card elements from all stacks.
   init.deck.clear = function() {
-    var stacks = fStacks.concat(tStacks);
+    var stacks = fStacks.concat(tStacks).concat(WASTE).concat(STOCK);
     for (var i = 0; i < stacks.length; i++) {
-      $('#' + stacks[i]).getAllCards().unbind().remove();
+      $('#' + stacks[i]).getAllCards().remove();
       $('#' + stacks[i]).children('div:first').addClass(TOP);
     }
     cardImgZIndex = 1;
