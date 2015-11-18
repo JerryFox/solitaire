@@ -1,2 +1,5 @@
 
-TODO: Bug fix - Tableau placeholders occasionally lose droppable event.
+Solitaire
+---------
+- Responsive
+- Mobile friendly (performance lags)
