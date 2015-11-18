@@ -54,6 +54,9 @@ var solitaire = (function() {
   // Ensures the card in focus always remains on top of other cards in game.
   var cardImgZIndex = 1;
 
+  // Game timer
+  var timer = 0;
+
   // Initialization ------------------------------------------------------------
 
   var init = function() {
@@ -61,6 +64,7 @@ var solitaire = (function() {
     init.stack();
     init.loading();
     init.deck();
+    init.timer();
   };
 
   init.controls = function() {
@@ -68,7 +72,7 @@ var solitaire = (function() {
     var controls = $('<div id="controls-title"></div>');
     var dealBtn = $('<button id="' + DEAL + '">Deal</button>');
     controls.append(dealBtn);
-    controls.append('<div id="solitaire-title">Solitaire Rocks</div>');
+    controls.append('<div id="timer">Time: <span>' + timer + '</span></div>');
     game.append(controls);
   };
 
@@ -210,41 +214,26 @@ var solitaire = (function() {
   init.deck.clear = function() {
     var stacks = fStacks.concat(tStacks);
     for (var i = 0; i < stacks.length; i++) {
-      $('#' + stacks[i]).getAllCards().remove();
+      $('#' + stacks[i]).getAllCards().unbind().remove();
       $('#' + stacks[i]).children('div:first').addClass(TOP);
     }
     cardImgZIndex = 1;
+  };
+
+  init.timer = function() {
+    window.setInterval(function()
+    {
+      if (!blockControls && gameInProgress) {
+        timer++;
+        $('#timer span').text(timer);
+      }
+    }, 1000);
   };
 
   var reinit = function() {
     gameInProgress = false;
     init.deck.clear();
     init.deck();
-
-
-
-
-
-
-
-
-
-
-
-
-    // restore placeholder drop zone to size of single card
-    for (var i = 0; i < tStacks.length; i++)
-      $('#' + tStacks[i]).getPlaceholder().css('height', 'auto');
-
-
-
-
-
-
-
-
-
-
     blockControls = false;
   };
 
@@ -254,6 +243,8 @@ var solitaire = (function() {
     if (!blockControls) {
       if (gameInProgress)
         reinit();
+      timer = 0;
+      $('#timer span').text(timer);
       deal.cards();
       gameInProgress = true;
     }
@@ -303,7 +294,7 @@ var solitaire = (function() {
   win.displayMessage = function() {
     blockControls = true;
     var fontSize = $('#' + TAB_1).width();
-    var win = ['Y', 'O', 'U', 'W', 'I', 'N'];
+    var win = ['Y', 'O', 'U', ' ', 'W', 'I', 'N'];
     for (var i = 0; i < win.length; i++) {
       var div = $('<div class="' + WIN + '"><span>' + win[i] + '</span></div>');
       div.css('font-size', fontSize - 25 + 'px');

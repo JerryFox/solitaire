@@ -1,6 +1,6 @@
 @import url(https://fonts.googleapis.com/css?family=Lato|Neucha);
 
-$max-game-width: 900px;
+$max-game-width: 700px;
 $card-width: 13%;
 $card-spacing: 1.5%;
 $tableau-spacing: 35px;
@@ -32,6 +32,8 @@ $tableau-spacing: 35px;
 
 html, body {
   height: 100%;
+	margin: 0;
+	padding: 0 10px;
   background-color: #27ae60;
 }
 
@@ -61,7 +63,7 @@ body {
 
 	#controls-title {
 		position: relative;
-		margin: 60px 0 25px 0;
+		padding: 20px 0;
 		color: white;
 		font-family: Lato, sans-serif;
 
@@ -85,10 +87,15 @@ body {
 			}
 		}
 
-		#solitaire-title {
-			position: absolute;
-	    bottom: 0;
-	    right: 0;
+		#timer {
+			float: right;
+			line-height: 3em;
+
+			span {
+				display: inline-block;
+				min-width: 1.5em;
+				text-align: right;
+			}
 		}
 	}
 
